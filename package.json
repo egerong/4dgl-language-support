@@ -1,0 +1,25 @@
+{
+    "name": "4dgl-language-support",
+    "displayName": "4DGL Language Support",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.44.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "4dgl",
+            "aliases": ["4DGL", "4dgl"],
+            "extensions": [".4dg .inc"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "4dgl",
+            "scopeName": "source.4dgl",
+            "path": "./syntaxes/4dgl.tmLanguage.json"
+        }]
+    }
+}
