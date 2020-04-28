@@ -17,6 +17,9 @@
 		},
 		{
 			"include": "#constants"
+		},
+		{
+			"include": "#funcs"
 		}
 	],
 	"repository": {
@@ -24,11 +27,11 @@
 			"patterns": [
 				{
 					"name": "keyword.control.4dgl",
-					"match": "\\b(if|else|endif|case|break|for|next|return|func|endfunc)\\b"
+					"match": "\\b(if|else|endif|case|break|for|next|return)\\b"
 				},
 				{
 					"name": "keyword.operator.4dgl",
-					"match": "(\\+|:=|-|&&|\\|\\||<|>|>=|<=|==|\\+=|%|\\*)"
+					"match": "(\\+|:=|-|&&|\\|\\||<|>|>=|<=|==|\\+=|%|\\*|[^/][/][^/*])"
 				}
 			]
 		},
@@ -75,55 +78,64 @@
 		"constants": {
 			"patterns": [
 				{
-					"name": "constant.numeric.4dgl",
-					"match": "[0-9]"
+					"match": "\\W([0-9]+)",
+					"captures": {
+						"1": {"name": "constant.numeric.4dgl"}
+					}
 				}
 			]
 		},
 		"variables": {
 			"patterns": [
 				{
-					"name": "storage.type.4dgl",
-					"match": "var"
-				},
-				{
-					"name": "storage.modifier",
-					"match": "private"
+
+					"match": "\\b(var) (private )?(\\w*)\\b",
+					"captures": {
+						"1": {"name": "storage.type.4dgl"},
+						"2": {"name": "storage.modifier.4dgl"},
+						"3": {"name": "variable.parameter.4dgl"}
+					}
 				}
 			]
 		},
-		"functions": {
+		"funcs": {
+			"name": "meta.function.4dgl",
+			"begin": "\\b(func) +(.*?)\\(",
+			"beginCaptures": {
+				"1": {"name": "storage.type.4dgl"},
+				"2": {"name": "entity.name.function.4dgl"}
+			},
+			"end": "\\b(endfunc)\\b",
+			"endCaptures": {
+				"1": {"name": "storage.type.4dgl"}
+			},
 			"patterns": [
 				{
-					"name": "meta.function",
-					"begin": "^func",
-					"end": "endfunc",
-					"patterns": [
-						{
-							"include": "#keywords"
-						},
-						{
-							"include": "#strings"
-						},
-						{
-							"include": "#comments"
-						},
-						{
-							"include": "#variables"
-						},
-						{
-							"include": "#constants"
-						},
-						{
-							"contentName": "entity.name.function",
-							"begin": "^func ",
-							"end": "("
-						}
-					]
+					"include": "#keywords"
+				},
+				{
+					"include": "#strings"
+				},
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#variables"
+				},
+				{
+					"include": "#constants"
 				}
-				
+			]
+		},
+		"errors": {
+			"patterns": [
+				{
+					"name": "invalid.illegal",
+					"match": "^.*[^;](\n|//|/\\*"
+				}
 			]
 		}
 	},
 	"scopeName": "source.4dgl"
 }
+
