@@ -2,29 +2,126 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "4DGL",
 	"patterns": [
+
 		{
 			"include": "#keywords"
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#variables"
+		},
+		{
+			"include": "#constants"
 		}
 	],
 	"repository": {
 		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.4dgl",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.4dgl",
-			"begin": "\"",
-			"end": "\"",
 			"patterns": [
 				{
-					"name": "constant.character.escape.4dgl",
-					"match": "\\\\."
+					"name": "keyword.control.4dgl",
+					"match": "\\b(if|else|endif|case|break|for|next|return|func|endfunc)\\b"
+				},
+				{
+					"name": "keyword.operator.4dgl",
+					"match": "(\\+|:=|-|&&|\\|\\||<|>|>=|<=|==|\\+=|%|\\*)"
 				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.4dgl",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape.4dgl",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.4dgl",
+					"begin": "\\'",
+					"end": "\\'",
+					"patterns": [
+						{
+							"name": "constant.character.escape.4dgl",
+							"match": "\\\\."
+						}
+					]
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.4dgl",
+					"begin": "//",
+					"end": "\n"
+				},
+				{
+					"name": "comment.block.4dgl",
+					"begin": "\/[*]",
+					"end": "[*](\/)"
+				}
+			]
+		},
+		"constants": {
+			"patterns": [
+				{
+					"name": "constant.numeric.4dgl",
+					"match": "[0-9]"
+				}
+			]
+		},
+		"variables": {
+			"patterns": [
+				{
+					"name": "storage.type.4dgl",
+					"match": "var"
+				},
+				{
+					"name": "storage.modifier",
+					"match": "private"
+				}
+			]
+		},
+		"functions": {
+			"patterns": [
+				{
+					"name": "meta.function",
+					"begin": "^func",
+					"end": "endfunc",
+					"patterns": [
+						{
+							"include": "#keywords"
+						},
+						{
+							"include": "#strings"
+						},
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#variables"
+						},
+						{
+							"include": "#constants"
+						},
+						{
+							"contentName": "entity.name.function",
+							"begin": "^func ",
+							"end": "("
+						}
+					]
+				}
+				
 			]
 		}
 	},
