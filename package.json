@@ -13,7 +13,7 @@
         "languages": [{
             "id": "4dgl",
             "aliases": ["4DGL", "4dgl"],
-            "extensions": [".4dg .inc"],
+            "extensions": [".inc", ".4dg"],
             "configuration": "./language-configuration.json"
         }],
         "grammars": [{
