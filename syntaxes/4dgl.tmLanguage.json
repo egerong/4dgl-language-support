@@ -27,7 +27,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.4dgl",
-					"match": "\\b(if|else|endif|case|break|for|next|return)\\b"
+					"match": "\\b(if|else|endif|switch|case|default|endswitch|while|wend|repeat|forever|until|break|continue|for|next|return|gosub|endsub)\\b"
 				},
 				{
 					"name": "keyword.operator.4dgl",
@@ -88,7 +88,6 @@
 		"variables": {
 			"patterns": [
 				{
-
 					"match": "\\b(var) (private )?(\\w*)\\b",
 					"captures": {
 						"1": {"name": "storage.type.4dgl"},
