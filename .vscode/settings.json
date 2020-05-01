@@ -1,0 +1,12 @@
+{
+	"editor.insertSpaces": false,
+	"editor.tokenColorCustomizationsExperimental": {
+		"*.static": {
+			"foreground": "#ff0000",
+			"fontStyle": "bold"
+		},
+		"type": {
+			"foreground": "#00aa00"
+		}
+	}
+}
