@@ -12,6 +12,7 @@
     "activationEvents": [
         "onLanguage:4dgl"
     ],
+    "main": "./out/extension.js",
     "contributes": {
         "languages": [
             {

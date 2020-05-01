@@ -21,7 +21,7 @@ const legend = (function () {
 })();
 
 export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'semanticLanguage'}, new DocumentSemanticTokensProvider(), legend));
+	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: '4dgl'}, new DocumentSemanticTokensProvider(), legend));
 }
 
 interface IParsedToken {
@@ -90,7 +90,7 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
 	}
 
 	private _parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
-		let parts = text.split('.');
+		let parts = text.split(' ');
 		return {
 			tokenType: parts[0],
 			tokenModifiers: parts.slice(1)
