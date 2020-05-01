@@ -61,12 +61,73 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
 	}
 
 	private _parseText(text: string): IParsedToken[] {
+		let constants: string[] = [];
+		let variables: string[] = [];
+		let functions: string[] = [];
+
 		let r: IParsedToken[] = [];
 		let lines = text.split(/\r\n|\r|\n/);
+
+		// Find functions and variables
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
+			
+			//Add constants to list
+			let constantDefine = line.match(/(#constant|word|byte) *\w*\b/);
+			if (constantDefine != null) {
+				constants.push(constantDefine[0].split(/ +/)[1]);
+
+			}
+			//Add functions to list
+			let variableDefine = line.match(/\bvar *\w*\b/);
+			if (variableDefine != null) {
+				variables.push(variableDefine[0].split(/ +/)[1]);
+
+			}
+			//Add functions to list
+			let functionDefine = line.match(/\bfunc *\w*\b/);
+			if (functionDefine != null) {
+				functions.push(functionDefine[0].split(/ +/)[1]);
+
+			}
+
+		}
+
+		// Assing tokens
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			let words = line.split(/\b/);
+			let currentIndex = 0;
+			for (let j=0; j < words.length; j++) {
+				
+				let wordType = null;
+				const word = words[j];
+				const wordLen = word.length;
+				//console.log(word);
+				if (functions.includes(word)) {
+					wordType = 'function';
+				}
+				if (constants.includes(word)) {
+					wordType = 'property';
+				}
+				if (variables.includes(word)) {
+					wordType = 'variable';
+				}
+				if (wordType != null) {
+					//console.log("Match line", i+1, ":", word, wordLen);
+					r.push({
+						line: i,
+						startCharacter: currentIndex,
+						length: wordLen,
+						tokenType: wordType,
+						tokenModifiers: []
+					});
+				}
+				currentIndex += wordLen;
+			}
+
 			let currentOffset = 0;
-			do {
+			while (false) {
 				const openOffset = line.indexOf('[', currentOffset);
 				if (openOffset === -1) {
 					break;
@@ -84,7 +145,7 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
 					tokenModifiers: tokenData.tokenModifiers
 				});
 				currentOffset = closeOffset;
-			} while (true);
+			} while (false);
 		}
 		return r;
 	}
