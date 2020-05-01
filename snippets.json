@@ -1,0 +1,42 @@
+{
+    "For Loop": {
+        "prefix": ["for"],
+        "body": [
+            "for (${1:initialize}; ${2:condition}; ${3:increment})",
+            "\t$0",
+            "next"
+        ]   
+    },
+    "Switch multiple expression": {
+        "prefix": ["switch"],
+        "body": [
+            "switch",
+            "\tcase (${1:expression}):",
+            "\t\t%0",
+            "\t\tbreak;",
+            "\tcase ${2:expression}:",
+            "\t\t",
+            "\t\tbreak;",
+            "\tcase ${3:expression}:",
+            "\t\t",
+            "\t\tbreak;",
+            "endswitch"
+        ]
+    },
+    "Switch single expression": {
+        "prefix": ["switch ("],
+        "body": [
+            "switch (${1:expression})",
+            "\tcase ${2:value}:",
+            "\t\t%0",
+            "\t\tbreak;",
+            "\tcase ${3:value}:",
+            "\t\t",
+            "\t\tbreak;",
+            "\tcase ${4:value}:",
+            "\t\t",
+            "\t\tbreak;",
+            "endswitch"
+        ]
+    }
+}

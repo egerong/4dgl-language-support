@@ -20,6 +20,10 @@
             "language": "4dgl",
             "scopeName": "source.4dgl",
             "path": "./syntaxes/4dgl.tmLanguage.json"
-        }]
+        }],
+        "snippets": [{
+                "language": "4dgl",
+                "path": "./snippets.json"
+            }]
     }
 }
