@@ -28,41 +28,41 @@ export function activate(context: vscode.ExtensionContext) {
 class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 	async provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
 		let allSymbols: vscode.DocumentSymbol[] = [];
-		allSymbols.push(new vscode.DocumentSymbol('asi', 'details', vscode.SymbolKind.Function, new vscode.Range(0,0,2,2), new vscode.Range(1,1,1,5)));
+		//allSymbols.push(new vscode.DocumentSymbol('asi', 'details', vscode.SymbolKind.Function, new vscode.Range(0,0,2,2), new vscode.Range(1,1,1,5)));
+		allSymbols = this._parseText(document)
 		return allSymbols
 	}
 
-	private _parseText(text: string): vscode.DocumentSymbol[] {
+	private _parseText(document: vscode.TextDocument): vscode.DocumentSymbol[] {
 		let symbols: vscode.DocumentSymbol[] = [];
-		let lines = text.split(/\r\n|\r|\n/);
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-
-			// Find functions
-			/*
-			let currentOffset = 0;
-			do {
-				const openOffset = line.indexOf('[', currentOffset);
-				if (openOffset === -1) {
-					break;
+		
+		for (let i = 0; i < document.lineCount; ++i) {
+			const line = document.lineAt(i);
+				let somethingNew = false;
+			
+				if (line.isEmptyOrWhitespace) {
+					continue
 				}
-				const closeOffset = line.indexOf(']', openOffset);
-				if (closeOffset === -1) {
-					break;
+				
+				//Add constants to list
+				let constantDefine = line.text.match(/(#constant|word|byte) *\w*\b/);
+				if (constantDefine != null) {
+					somethingNew = true;
+					const name = (constantDefine[0].split(/ +/)[1]);
+					const start = line.text.indexOf(name);
+					const end = start + name.length;
+					const start2 = start;
+					const end2 = end;
+					symbols.push(new vscode.DocumentSymbol(
+						name,
+						'',
+						vscode.SymbolKind.Constant,
+						new vscode.Range(i, start, i, end),
+						new vscode.Range(i, start2, i, end2),
+					))
 				}
-				let tokenData = this._parseTextToken(line.substring(openOffset + 1, closeOffset));
-				r.push({
-					line: i,
-					startCharacter: openOffset + 1,
-					length: closeOffset - openOffset - 1,
-					tokenType: tokenData.tokenType,
-					tokenModifiers: tokenData.tokenModifiers
-				});
-				currentOffset = closeOffset;
-			} while (true);
-			*/
 		}
-		return symbols;
+		return symbols
 	}
 
 }
