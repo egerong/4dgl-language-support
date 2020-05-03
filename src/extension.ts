@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { parse } from 'path';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -20,51 +21,115 @@ const legend = (function () {
 	return new vscode.SemanticTokensLegend(tokenTypesLegend, tokenModifiersLegend);
 })();
 
+let documentSymbols = new Map<vscode.Uri, vscode.DocumentSymbol[]>();
+let workspaceSymbols: vscode.SymbolInformation[] = [];
+
 export function activate(context: vscode.ExtensionContext) {
 	//context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: '4dgl'}, new DocumentSemanticTokensProvider(), legend));
 	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider({language: '4dgl'}, new DocumentSymbolProvider, undefined));
+	context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(onDidOpenTextDocument))
+	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(onDidChangeTextDocument))
+	for (let document of vscode.workspace.textDocuments) {
+		parseDocument(document);
+	}
 }
 
-class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
-	async provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
-		let allSymbols: vscode.DocumentSymbol[] = [];
-		//allSymbols.push(new vscode.DocumentSymbol('asi', 'details', vscode.SymbolKind.Function, new vscode.Range(0,0,2,2), new vscode.Range(1,1,1,5)));
-		allSymbols = this._parseText(document)
-		return allSymbols
-	}
+function onDidOpenTextDocument(document: vscode.TextDocument): void {
+	parseDocument(document);
+}
 
-	private _parseText(document: vscode.TextDocument): vscode.DocumentSymbol[] {
-		let symbols: vscode.DocumentSymbol[] = [];
+function onDidChangeTextDocument(change: vscode.TextDocumentChangeEvent): void {
+
+	parseDocument(change.document);
+}
+
+function parseDocument(document: vscode.TextDocument): void {
+
+	const regexMap = new Map<string, RegExp>( [
+		['variable', /\bvar +\*?(\w+)\b/],
+		['constant', /(#constant|word|byte) *\w* *\b/]
+	])
 		
-		for (let i = 0; i < document.lineCount; ++i) {
-			const line = document.lineAt(i);
-				let somethingNew = false;
+	
+	//console.debug("PARSE");
+	let symbols: vscode.DocumentSymbol[] = [];
+	let scope = global;
+	for (let i = 0; i < document.lineCount; ++i) {
+		const line = document.lineAt(i);
+		const lineText = line.text;
+		
+			if (line.isEmptyOrWhitespace) {
+				continue
+			}
 			
-				if (line.isEmptyOrWhitespace) {
-					continue
-				}
-				
-				//Add constants to list
-				let constantDefine = line.text.match(/(#constant|word|byte) *\w*\b/);
-				if (constantDefine != null) {
-					somethingNew = true;
-					const name = (constantDefine[0].split(/ +/)[1]);
-					const start = line.text.indexOf(name);
+			//Add variables
+			
+			const regex = regexMap.get('variable')
+			if (regex) {
+				const matches = lineText.matchAll(regex);
+				for (const match of matches) {
+					const name = match[1];	
+					const start = lineText.indexOf(name);
 					const end = start + name.length;
-					const start2 = start;
-					const end2 = end;
-					symbols.push(new vscode.DocumentSymbol(
+					
+					symbols.push(
+						new vscode.DocumentSymbol(
+							match[1],
+							'',
+							vscode.SymbolKind.Variable,
+							new vscode.Range(i, start, i, end),
+							new vscode.Range(i, start, i, end),
+						)
+					);
+				}
+			}
+			/*
+			
+				let match = lineText.match(regex);
+				while (match) {
+					console.log(match);
+					
+					
+					
+					lineText.match(regex)
+				}
+			}
+			*/
+			
+			
+			//Add constants to list
+			let constantDefine = line.text.match(/(#constant|word|byte) *\w* *\b/);
+			if (constantDefine != null) {
+				const name = constantDefine[0].split(/ +/)[1];
+				const details = constantDefine[0].split(/ +/)[2]
+				const start = line.text.indexOf(name);
+				const end = start + name.length;
+				const start2 = start;
+				const end2 = end;
+				symbols.push(
+					new vscode.DocumentSymbol(
 						name,
-						'',
+						details,
 						vscode.SymbolKind.Constant,
 						new vscode.Range(i, start, i, end),
 						new vscode.Range(i, start2, i, end2),
-					))
-				}
+					)
+				);
+			}
+	}
+	documentSymbols.set(document.uri, symbols);
+}
+
+
+
+class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+	async provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
+		const symbols = documentSymbols.get(document.uri);
+		if (symbols == undefined) {
+			return []
 		}
 		return symbols
 	}
-
 }
 
 interface IParsedToken {
