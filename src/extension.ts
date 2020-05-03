@@ -21,11 +21,13 @@ const legend = (function () {
 })();
 
 let documentSymbols = new Map<vscode.Uri, vscode.DocumentSymbol[]>();
+let completionItems: vscode.CompletionItem[] = [];
 let workspaceSymbols: vscode.SymbolInformation[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
 	//context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: '4dgl'}, new DocumentSemanticTokensProvider(), legend));
 	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider({language: '4dgl'}, new DocumentSymbolProvider, undefined));
+	context.subscriptions.push(vscode.languages.registerCompletionItemProvider({language: '4dgl'}, new CompletionItemProvider))
 	context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(onDidOpenTextDocument))
 	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(onDidChangeTextDocument))
 	for (let document of vscode.workspace.textDocuments) {
@@ -54,9 +56,9 @@ function parseDocument(document: vscode.TextDocument): void {
 	
 	//console.debug("PARSE");
 	let symbols: vscode.DocumentSymbol[] = [];
+	let completions: vscode.CompletionItem[] = [];
 	let scope = global;
 	let currentFunction = null;
-	var regex
 	for (let i = 0; i < document.lineCount; ++i) {
 		
 		const line = document.lineAt(i);
@@ -74,6 +76,12 @@ function parseDocument(document: vscode.TextDocument): void {
 				const name = match[1];	
 				const start = lineText.indexOf(name);
 				const end = start + name.length;
+				completions.push(
+					new vscode.CompletionItem(
+						name,
+						vscode.CompletionItemKind.Function
+					)
+				);
 				currentFunction = new vscode.DocumentSymbol(
 					match[1],
 					'',
@@ -151,6 +159,7 @@ function parseDocument(document: vscode.TextDocument): void {
 		}
 	}
 	documentSymbols.set(document.uri, symbols);
+	completionItems = completions;
 }
 
 
@@ -162,6 +171,17 @@ class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 			return []
 		}
 		return symbols
+	}
+}
+
+class CompletionItemProvider implements vscode.CompletionItemProvider {
+	async provideCompletionItems(
+		document: vscode.TextDocument,
+		position: vscode.Position,
+		token: vscode.CancellationToken,
+		context: vscode.CompletionContext):
+	Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+		return completionItems;
 	}
 }
 
