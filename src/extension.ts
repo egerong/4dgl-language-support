@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { parse } from 'path';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -47,75 +46,109 @@ function parseDocument(document: vscode.TextDocument): void {
 
 	const regexMap = new Map<string, RegExp>( [
 		['variable', /\bvar +\*?(\w+)\b/],
-		['constant', /(#constant|word|byte) *\w* *\b/]
+		['constant', /(#constant|word|byte) *\w* *\b/],
+		['funcStart', /\bfunc +(\w+) ?\(/],
+		['funcEnd', /\bendfunc\b/ ]
 	])
 		
 	
 	//console.debug("PARSE");
 	let symbols: vscode.DocumentSymbol[] = [];
 	let scope = global;
+	let currentFunction = null;
+	var regex
 	for (let i = 0; i < document.lineCount; ++i) {
+		
 		const line = document.lineAt(i);
 		const lineText = line.text;
+		let regex;
+		if (line.isEmptyOrWhitespace) {
+			continue
+		}
 		
-			if (line.isEmptyOrWhitespace) {
-				continue
-			}
-			
-			//Add variables
-			
-			const regex = regexMap.get('variable')
-			if (regex) {
-				const matches = lineText.matchAll(regex);
-				for (const match of matches) {
-					const name = match[1];	
-					const start = lineText.indexOf(name);
-					const end = start + name.length;
-					
-					symbols.push(
-						new vscode.DocumentSymbol(
-							match[1],
-							'',
-							vscode.SymbolKind.Variable,
-							new vscode.Range(i, start, i, end),
-							new vscode.Range(i, start, i, end),
-						)
-					);
-				}
-			}
-			/*
-			
-				let match = lineText.match(regex);
-				while (match) {
-					console.log(match);
-					
-					
-					
-					lineText.match(regex)
-				}
-			}
-			*/
-			
-			
-			//Add constants to list
-			let constantDefine = line.text.match(/(#constant|word|byte) *\w* *\b/);
-			if (constantDefine != null) {
-				const name = constantDefine[0].split(/ +/)[1];
-				const details = constantDefine[0].split(/ +/)[2]
-				const start = line.text.indexOf(name);
+		//Add functions
+		//let regex = regexMap.get('funcStart');
+		if (regex = regexMap.get('funcStart')) {
+			const match = lineText.match(regex);
+			if (match) {
+				const name = match[1];	
+				const start = lineText.indexOf(name);
 				const end = start + name.length;
-				const start2 = start;
-				const end2 = end;
-				symbols.push(
-					new vscode.DocumentSymbol(
-						name,
-						details,
-						vscode.SymbolKind.Constant,
-						new vscode.Range(i, start, i, end),
-						new vscode.Range(i, start2, i, end2),
-					)
+				currentFunction = new vscode.DocumentSymbol(
+					match[1],
+					'',
+					vscode.SymbolKind.Function,
+					line.range,
+					new vscode.Range(i, start, i, end),
 				);
 			}
+		}
+		regex = regexMap.get('funcEnd');
+		if (regex) {
+			const match = lineText.match(regex);
+			if (match && currentFunction) {
+				currentFunction.range = currentFunction.range.with({end: line.range.end})
+				symbols.push(currentFunction);
+				currentFunction = null;
+			}
+		}
+
+
+		//Add variables
+		regex = regexMap.get('variable');
+		if (regex) {
+			const matches = lineText.matchAll(regex);
+			for (const match of matches) {
+				const name = match[1];	
+				const start = lineText.indexOf(name);
+				const end = start + name.length;
+				const variable = new vscode.DocumentSymbol(
+					name,
+					'',
+					vscode.SymbolKind.Variable,
+					new vscode.Range(i, start, i, end),
+					new vscode.Range(i, start, i, end),
+				)
+				if (currentFunction) {
+					currentFunction.children.push(variable);
+				} else {
+					symbols.push(variable);
+				}
+			}
+		}
+		/*
+		
+			let match = lineText.match(regex);
+			while (match) {
+				console.log(match);
+				
+				
+				
+				lineText.match(regex)
+			}
+		}
+		*/
+		
+		
+		//Add constants to list
+		let constantDefine = line.text.match(/(#constant|word|byte) *\w* *\b/);
+		if (constantDefine != null) {
+			const name = constantDefine[0].split(/ +/)[1];
+			const details = constantDefine[0].split(/ +/)[2]
+			const start = line.text.indexOf(name);
+			const end = start + name.length;
+			const start2 = start;
+			const end2 = end;
+			symbols.push(
+				new vscode.DocumentSymbol(
+					name,
+					details,
+					vscode.SymbolKind.Constant,
+					new vscode.Range(i, start, i, end),
+					new vscode.Range(i, start2, i, end2),
+				)
+			);
+		}
 	}
 	documentSymbols.set(document.uri, symbols);
 }
