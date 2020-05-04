@@ -9,17 +9,43 @@
     "categories": [
         "Programming Languages"
     ],
+    "activationEvents": [
+        "onLanguage:4dgl"
+    ],
+    "main": "./out/extension.js",
     "contributes": {
-        "languages": [{
-            "id": "4dgl",
-            "aliases": ["4DGL", "4dgl"],
-            "extensions": [".inc", ".4dg"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "4dgl",
-            "scopeName": "source.4dgl",
-            "path": "./syntaxes/4dgl.tmLanguage.json"
-        }]
+        "languages": [
+            {
+                "id": "4dgl",
+                "aliases": [
+                    "4DGL",
+                    "4dgl"
+                ],
+                "extensions": [
+                    ".inc",
+                    ".4dg"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "4dgl",
+                "scopeName": "source.4dgl",
+                "path": "./syntaxes/4dgl.tmLanguage.json"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "lint": "tslint -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^12.12.0",
+        "@types/vscode": "^1.32.0",
+        "tslint": "^5.19.0",
+        "typescript": "^3.8.3"
     }
 }
