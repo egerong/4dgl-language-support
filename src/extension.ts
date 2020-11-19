@@ -47,10 +47,10 @@ function onDidChangeTextDocument(change: vscode.TextDocumentChangeEvent): void {
 function parseDocument(document: vscode.TextDocument): void {
 
 	const regexMap = new Map<string, RegExp>( [
-		['variable', /\bvar +\*?(\w+)\b/],
-		['constant', /(#constant|word|byte) *\w* *\b/],
+		['variable', /\bvar +\*?(\w+)\b/g],
+		['constant', /(#constant|word|byte) *\w* *\b/g],
 		['funcStart', /\bfunc +(\w+) ?\(/],
-		['funcEnd', /\bendfunc\b/ ]
+		['funcEnd', /\bendfunc\b/g ]
 	])
 		
 	
@@ -62,15 +62,15 @@ function parseDocument(document: vscode.TextDocument): void {
 	for (let i = 0; i < document.lineCount; ++i) {
 		
 		const line = document.lineAt(i);
-		const lineText = line.text;
-		let regex;
 		if (line.isEmptyOrWhitespace) {
 			continue
 		}
+		let regex;
+		const lineText = line.text;
 		
 		//Add functions
-		//let regex = regexMap.get('funcStart');
-		if (regex = regexMap.get('funcStart')) {
+		regex = regexMap.get('funcStart');
+		if (regex) {
 			const match = lineText.match(regex);
 			if (match) {
 				const name = match[1];	
@@ -107,7 +107,7 @@ function parseDocument(document: vscode.TextDocument): void {
 		if (regex) {
 			const matches = lineText.matchAll(regex);
 			for (const match of matches) {
-				const name = match[1];	
+				const name = match[1];
 				const start = lineText.indexOf(name);
 				const end = start + name.length;
 				const variable = new vscode.DocumentSymbol(
